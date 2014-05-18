@@ -25,8 +25,7 @@ The median of total number of steps taken per day is `r med`)
 ## What is the average daily activity pattern?
 
 ```{r}
-data <- transform(data, interval = factor(interval))
-averageStepsTaken <- tapply(data$steps, data$interval, mean, na.rm = TRUE) 
+averageStepsTaken <- tapply(data$steps, factor(data$interval), mean, na.rm = TRUE) 
 plot(levels(data$interval), averageStepsTaken, type ='l')
 maxLocation <- which(averageStepsTaken  == max(averageStepsTaken))
 maxLocation <- (maxLocation - 1) * 5
@@ -43,8 +42,11 @@ The total number of missing values in the dataset is `r totalNA`.
 
 Fill in the missing values in the dataset with mean for the mean total number of steps taken per day.
 ```{r}
-data$steps[is.na(data$steps)] = m
+averageStepsTaken <- tapply(data$steps, factor(data$interval), mean, na.rm = TRUE) 
+values <- averageStepsTaken[as.integer(factor(data$interval))]
+data$steps[is.na(data$steps)] = values[is.na(data$steps)]
 totalNumberPerday <- tapply(data$steps, data$date, sum)
+hist(totalNumberPerday, breaks =10)
 m <- mean(totalNumberPerday)
 med <- median(totalNumberPerday)
 ```
@@ -54,10 +56,25 @@ The mean of total number of steps taken per day is `r m`.
 The median of total number of steps taken per day is `r med`)
 
 Do these values differ from the estimates from the first part of the assignment?  
-Yes, these values differ from the estimates from the first part of the assignment. 
+Since I filled in the missing value with the mean. Mean is not differ from first part.
 
 What is the impact of imputing missing data on the estimates of the total daily number of steps?  
-Increasing these values. 
+The mean became the median.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+```{r}
+wd <- data$date
+wd <- strptime(wd, "%Y-%m-%d")
+wd <- weekdays(wd)
+wd <- as.character(wd)
+weekend <- (wd == "Sunday" | wd == "Saturday")
+data$weekdays = "weekdays"
+data$weekdays[weekend] = "weekend"
+library(lattice)
+averageStepsTaken <- tapply(data$steps, data$interval, mean, na.rm = TRUE) 
+xyplot(averageStepsTaken ~ data$interval | factor(data$weekdays), type='l', layout = c(1, 2))
+```
+

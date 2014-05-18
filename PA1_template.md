@@ -35,12 +35,13 @@ The median of total number of steps taken per day is 10765)
 
 
 ```r
-data <- transform(data, interval = factor(interval))
-averageStepsTaken <- tapply(data$steps, data$interval, mean, na.rm = TRUE)
+averageStepsTaken <- tapply(data$steps, factor(data$interval), mean, na.rm = TRUE)
 plot(levels(data$interval), averageStepsTaken, type = "l")
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+```
+## Error: 'x' and 'y' lengths differ
+```
 
 ```r
 maxLocation <- which(averageStepsTaken == max(averageStepsTaken))
@@ -62,22 +63,50 @@ The total number of missing values in the dataset is 2304.
 Fill in the missing values in the dataset with mean for the mean total number of steps taken per day.
 
 ```r
-data$steps[is.na(data$steps)] = m
+averageStepsTaken <- tapply(data$steps, factor(data$interval), mean, na.rm = TRUE)
+values <- averageStepsTaken[as.integer(factor(data$interval))]
+data$steps[is.na(data$steps)] = values[is.na(data$steps)]
 totalNumberPerday <- tapply(data$steps, data$date, sum)
+hist(totalNumberPerday, breaks = 10)
+```
+
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
+
+```r
 m <- mean(totalNumberPerday)
 med <- median(totalNumberPerday)
 ```
 
 
 After filling in the missing value with mean of the total number of steps taken per day:  
-The mean of total number of steps taken per day is 4.16 &times; 10<sup>5</sup>.
-The median of total number of steps taken per day is 1.1458 &times; 10<sup>4</sup>)
+The mean of total number of steps taken per day is 1.0766 &times; 10<sup>4</sup>.
+The median of total number of steps taken per day is 1.0766 &times; 10<sup>4</sup>)
 
 Do these values differ from the estimates from the first part of the assignment?  
-Yes, these values differ from the estimates from the first part of the assignment. 
+Since I filled in the missing value with the mean. Mean is not differ from first part.
 
 What is the impact of imputing missing data on the estimates of the total daily number of steps?  
-Increasing these values. 
+The mean became the median.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+
+```r
+wd <- data$date
+wd <- strptime(wd, "%Y-%m-%d")
+wd <- weekdays(wd)
+wd <- as.character(wd)
+weekend <- (wd == "Sunday" | wd == "Saturday")
+data$weekdays = "weekdays"
+data$weekdays[weekend] = "weekend"
+library(lattice)
+averageStepsTaken <- tapply(data$steps, data$interval, mean, na.rm = TRUE)
+xyplot(averageStepsTaken ~ data$interval | factor(data$weekdays), type = "l", 
+    layout = c(1, 2))
+```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+
+
